@@ -1,12 +1,17 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.com.google.devtools.ksp)
+    alias(libs.plugins.com.google.dagger.hilt.android)
 }
+
 
 android {
     namespace = "com.iambenbradley.altaglio"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.iambenbradley.altaglio"
@@ -19,6 +24,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val dittoAppId = gradleLocalProperties(rootDir).getProperty("appId") ?: ""
+        buildConfigField("String","DITTO_APP_ID", "\"$dittoAppId\"")
+
+        val dittoToken = gradleLocalProperties(rootDir).getProperty("token") ?: ""
+        buildConfigField("String","DITTO_TOKEN", "\"$dittoToken\"")
     }
 
     buildTypes {
@@ -39,9 +50,10 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
     packaging {
         resources {
@@ -51,6 +63,17 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.dagger)
+    implementation(libs.work)
+    ksp(libs.androidx.hilt.compiler)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.dagger.compiler)
+    implementation(libs.hilt.common)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.ditto)
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
